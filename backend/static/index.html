@@ -2,9 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IERT Smart Attendance System | AI Face Recognition & BLE Geofence</title>
-  <meta name="description" content="AI Facial Recognition and ESP32 BLE Beacon Digital Geofencing Attendance System">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <title>Smart Attendance System | AI Face Recognition & BLE Geofence Mobile App</title>
+  <meta name="description" content="AI Facial Recognition and ESP32 BLE Beacon Digital Geofencing Attendance System Mobile App">
+  
+  <!-- PWA & Mobile App Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SmartAttendance">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+
   <!-- Google Fonts: Outfit & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,37 +33,41 @@
         </div>
         <div>
           <h1 class="brand-title">IERT Smart Attendance</h1>
-          <p class="brand-subtitle">ESP32 BLE Digital Geofence + AI Facial Recognition Engine</p>
+          <p class="brand-subtitle">ESP32 BLE Digital Geofence + AI Facial Recognition</p>
         </div>
       </div>
 
       <div class="header-status">
+        <button id="pwaInstallBtn" class="btn btn-sm btn-accent pwa-install-btn" style="display:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Install App
+        </button>
         <div class="status-chip" id="beaconStatusChip">
           <span class="pulse-dot"></span>
-          <span id="beaconStatusText">BLE Beacon: IERT_Room_302</span>
+          <span id="beaconStatusText">BLE Beacon: Room_302</span>
         </div>
         <div class="status-chip chip-ai">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
           </svg>
-          <span id="aiEngineText">AI Engine: OpenCV YuNet + SFace</span>
+          <span id="aiEngineText">AI: YuNet + SFace</span>
         </div>
       </div>
     </header>
 
-    <!-- Navigation Tabs -->
-    <nav class="nav-tabs">
-      <button class="tab-btn active" data-tab="liveFeedTab">
+    <!-- Desktop Navigation Tabs -->
+    <nav class="nav-tabs desktop-only">
+      <button class="tab-btn active" data-tab="mobileSimulatorTab">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>
+        </svg>
+        Mobile Punch App
+      </button>
+      <button class="tab-btn" data-tab="liveFeedTab">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/>
         </svg>
         Live Attendance Feed
-      </button>
-      <button class="tab-btn" data-tab="mobileSimulatorTab">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>
-        </svg>
-        Student Mobile Simulator
       </button>
       <button class="tab-btn" data-tab="registerTab">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -73,74 +86,8 @@
     <!-- Main Content Area -->
     <main class="content-area">
 
-      <!-- TAB 1: Live Attendance Feed -->
-      <section id="liveFeedTab" class="tab-pane active">
-        <div class="stats-row">
-          <div class="stat-card">
-            <div class="stat-label">Enrolled Students</div>
-            <div class="stat-value" id="statEnrolled">0</div>
-            <div class="stat-sub">Registered in database</div>
-          </div>
-          <div class="stat-card stat-accent">
-            <div class="stat-label">Present Today</div>
-            <div class="stat-value" id="statPresent">0</div>
-            <div class="stat-sub">Verified in Room 302</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Geofence Perimeter</div>
-            <div class="stat-value">5 - 10m</div>
-            <div class="stat-sub">ESP32 BLE Beacon Active</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Match Threshold</div>
-            <div class="stat-value">&lt; 0.60</div>
-            <div class="stat-sub">128-d Cosine Metric</div>
-          </div>
-        </div>
-
-        <div class="panel-card">
-          <div class="panel-header">
-            <div>
-              <h2 class="panel-title">Real-Time Attendance Log</h2>
-              <p class="panel-sub">Verified student punch-ins for current classroom session</p>
-            </div>
-            <div class="panel-actions">
-              <button class="btn btn-secondary" id="refreshLogsBtn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
-                Refresh
-              </button>
-              <button class="btn btn-primary" id="quickExportBtn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Generate Excel Report
-              </button>
-            </div>
-          </div>
-
-          <div class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Time</th>
-                  <th>Roll No</th>
-                  <th>Student Name</th>
-                  <th>Room ID</th>
-                  <th>Signal (RSSI)</th>
-                  <th>AI Score</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="attendanceTableBody">
-                <tr>
-                  <td colspan="7" class="empty-state">No attendance logs recorded yet for today. Use the Mobile Simulator to mark attendance.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 2: Mobile Simulator (Interactive Frontend Client) -->
-      <section id="mobileSimulatorTab" class="tab-pane">
+      <!-- TAB 1: Mobile Simulator / Native App Punch View -->
+      <section id="mobileSimulatorTab" class="tab-pane active">
         <div class="simulator-layout">
           <!-- Virtual Mobile Device -->
           <div class="mobile-frame">
@@ -153,7 +100,7 @@
               <div class="phone-app-bar">
                 <div>
                   <span class="phone-time" id="phoneTime">10:45 AM</span>
-                  <div class="phone-title">IERT Attendance</div>
+                  <div class="phone-title">IERT Smart Punch</div>
                 </div>
                 <div class="phone-icons">
                   <span class="ble-indicator" id="simBleIcon" title="BLE Connected">
@@ -238,12 +185,12 @@
               <div class="camera-actions">
                 <button class="btn btn-secondary" id="startCameraBtn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                  Open Laptop Webcam
+                  Open Camera
                 </button>
                 <input type="file" id="simUploadFile" accept="image/*" style="display:none;">
                 <button class="btn btn-outline" id="simUploadBtn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  Or Test with Image File
+                  Test Image File
                 </button>
               </div>
             </div>
@@ -251,9 +198,75 @@
             <div class="info-alert">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               <div>
-                <strong>How the Mobile App Works:</strong> The student clicks "Mark Attendance". The app invisibly scans for the ESP32 beacon UUID. If RSSI is valid, it captures a selfie and POSTs to <code>/api/v1/verify</code>. Zero local images are saved to protect student privacy.
+                <strong>Mobile App Workflow:</strong> The app scans for the ESP32 beacon UUID. If RSSI is valid, it captures a selfie and POSTs to <code>/api/v1/verify</code>. Zero local images are saved to protect student privacy.
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: Live Attendance Feed -->
+      <section id="liveFeedTab" class="tab-pane">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Enrolled Students</div>
+            <div class="stat-value" id="statEnrolled">0</div>
+            <div class="stat-sub">Registered in database</div>
+          </div>
+          <div class="stat-card stat-accent">
+            <div class="stat-label">Present Today</div>
+            <div class="stat-value" id="statPresent">0</div>
+            <div class="stat-sub">Verified in Room 302</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Geofence Perimeter</div>
+            <div class="stat-value">5 - 10m</div>
+            <div class="stat-sub">ESP32 BLE Beacon Active</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Match Threshold</div>
+            <div class="stat-value">&lt; 0.60</div>
+            <div class="stat-sub">128-d Cosine Metric</div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Real-Time Attendance Log</h2>
+              <p class="panel-sub">Verified student punch-ins for current classroom session</p>
+            </div>
+            <div class="panel-actions">
+              <button class="btn btn-secondary" id="refreshLogsBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                Refresh
+              </button>
+              <button class="btn btn-primary" id="quickExportBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export Excel
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Roll No</th>
+                  <th>Student Name</th>
+                  <th>Room ID</th>
+                  <th>Signal (RSSI)</th>
+                  <th>AI Score</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceTableBody">
+                <tr>
+                  <td colspan="7" class="empty-state">No attendance logs recorded yet for today. Use the Mobile App to mark attendance.</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -294,7 +307,7 @@
                 </div>
                 <button type="button" class="btn btn-sm btn-outline mt-2" id="regWebcamSnapBtn">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                  Snap from Webcam
+                  Snap Photo from Camera
                 </button>
               </div>
 
@@ -326,7 +339,7 @@
         <div class="reports-layout">
           <div class="panel-card">
             <h2 class="panel-title">Automated Class Timetable &amp; Auto-Report Engine</h2>
-            <p class="panel-sub">Background cron daemon monitors schedule and dispatches Excel sheets automatically to faculty</p>
+            <p class="panel-sub">Background cron daemon monitors schedule and dispatches Excel sheets automatically</p>
 
             <div class="classes-grid" id="classesList">
               <!-- Rendered via JS -->
@@ -360,10 +373,49 @@
 
     </main>
 
+    <!-- Mobile Bottom Touch Navigation Bar -->
+    <nav class="mobile-bottom-nav">
+      <button class="mobile-nav-btn active" data-tab="mobileSimulatorTab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>
+        </svg>
+        <span>Punch</span>
+      </button>
+      <button class="mobile-nav-btn" data-tab="liveFeedTab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/>
+        </svg>
+        <span>Logs</span>
+      </button>
+      <button class="mobile-nav-btn" data-tab="registerTab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/>
+        </svg>
+        <span>Enroll</span>
+      </button>
+      <button class="mobile-nav-btn" data-tab="reportsTab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
+        </svg>
+        <span>Reports</span>
+      </button>
+    </nav>
+
     <!-- Global Toast / Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
   </div>
 
   <script src="/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then((reg) => {
+          console.log('[PWA] Service Worker registered successfully:', reg.scope);
+        }).catch((err) => {
+          console.warn('[PWA] Service Worker registration failed:', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>

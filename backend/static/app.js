@@ -77,21 +77,63 @@ function showToast(message, type = 'info') {
 }
 
 // -----------------------------------------------------------------------------
-// Navigation Tabs
+// PWA Installation & Mobile Navigation
 // -----------------------------------------------------------------------------
-elements.tabBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const targetTab = btn.dataset.tab;
-    elements.tabBtns.forEach(b => b.classList.remove('active'));
-    elements.tabPanes.forEach(p => p.classList.remove('active'));
+let deferredPrompt;
+const pwaInstallBtn = document.getElementById('pwaInstallBtn');
 
-    btn.classList.add('active');
-    document.getElementById(targetTab).classList.add('active');
-    state.activeTab = targetTab;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (pwaInstallBtn) {
+    pwaInstallBtn.style.display = 'inline-flex';
+  }
+});
 
-    if (targetTab === 'mobileSimulatorTab' && !state.cameraStream) {
-      initWebcam();
+if (pwaInstallBtn) {
+  pwaInstallBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`[PWA] Install prompt outcome: ${outcome}`);
+      deferredPrompt = null;
+      pwaInstallBtn.style.display = 'none';
     }
+  });
+}
+
+// -----------------------------------------------------------------------------
+// Navigation Tabs (Desktop & Mobile Touch Bar)
+// -----------------------------------------------------------------------------
+function switchTab(targetTab) {
+  const allTabBtns = document.querySelectorAll('.tab-btn, .mobile-nav-btn');
+  const allTabPanes = document.querySelectorAll('.tab-pane');
+
+  allTabBtns.forEach(b => {
+    if (b.dataset.tab === targetTab) {
+      b.classList.add('active');
+    } else {
+      b.classList.remove('active');
+    }
+  });
+
+  allTabPanes.forEach(p => {
+    if (p.id === targetTab) {
+      p.classList.add('active');
+    } else {
+      p.classList.remove('active');
+    }
+  });
+
+  state.activeTab = targetTab;
+  if (targetTab === 'mobileSimulatorTab' && !state.cameraStream) {
+    initWebcam();
+  }
+}
+
+document.querySelectorAll('.tab-btn, .mobile-nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    switchTab(btn.dataset.tab);
   });
 });
 
